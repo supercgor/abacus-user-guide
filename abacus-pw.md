@@ -72,7 +72,7 @@ Si
 
 ## 2. `KPT` 文件
 
-`KPT` 文件提供周期性边界条件下布里渊区$$k$$点采样的网格设置
+`KPT` 文件提供周期性边界条件下布里渊区$$k_{\text{total}}$$点采样的网格设置
 
 ```bash
 K_POINTS
@@ -81,7 +81,7 @@ Gamma
 k k k 0 0 0
 ```
 
-- 第 2 行表示$$k$$点的总数，如果设置成 "<strong>0</strong>" 代表$$k$$点是自动生成的
+- 第 2 行表示布里渊区采样的总点数$$k_{\text{total}}$$，如果设置成 "<strong>0</strong>" 代表$$k_{\text{total}}$$是自动生成的；
 - 如果第二行是 0，则第 3 行 <strong>"Gamma"</strong> (Γ-centered Monkhorst-Pack method)是选择以 Gamma 点为中心的 Monkhorst-Pack 方法划分布里渊区网格，此外还可以使用 <strong>"mp" </strong>方法，即最常用的 Monkhorst-Pack 方法。
 - 第 4 行的前三个整数代表网格沿着每个方向划分成几份，后三个数代表网格的平移量，0 0 0 即代表不平移。
 - 计算立方形晶格时，$$k$$点各方向应取相同个数。在本次计算中，我们会将$$k$$的各方向从 2 取到 8，测试不同$$k$$点下体系能量的收敛情况。
@@ -90,9 +90,16 @@ k k k 0 0 0
 
 # 四、INPUT 文件关键输入参数
 
-我们以金刚石结构硅原子体系（8 个原子）作为示例，进行电子自洽迭代计算(Self Consistent Field，SCF)。接下来让我们需要准备一个 `INPUT` 文件，我们把一些计算的关键参数分成如下 5 个部分。
+我们以金刚石结构硅原子体系（8 个原子）作为示例，进行电子自洽迭代计算(Self Consistent Field，SCF)。接下来让我们需要准备一个 `INPUT` 文件，我们约定INPUT文件由第一次出现 `INPUT_PARAMETERS` 开始，因此我们在定义输入参数前，需要包含一行：
+
+```bash
+INPUT_PARAMETERS
+```
+
+其后，我们把一些计算的关键参数分成如下 5 个部分。
 
 ## 1. 基本参数
+
 
 - <strong>suffix：</strong>`suffix` 是用户可以自定义的后缀，运行 ABACUS 可执行程序之后，输入文件所在的文件夹里会生成一个包含大部分运行信息的 `OUT.suffix` 文件夹。例如，在这个例子里我们可设为 "<strong>Si</strong>"，运行后就会产生一个 `OUT.Si` 文件夹。
 - <strong>calculation</strong>：设置本次计算类型，例如本次文档主要展示 "<strong>scf</strong>"(自洽电子结构计算)。scf((Self Consistent Field)、relax、cell-relax、md(Molecular Dynamics)是较常用的四类计算。
@@ -111,7 +118,7 @@ k k k 0 0 0
 如果打开对称性（设置为 1），布里渊区$$k$$点可以根据对称性进行简化处理，若体系有对称性，则可以减少所需计算的$$k$$点。因为每个$$k$$点都会进行一次 Kohn-Sham 方程的求解，对称性分析后若 k 点减少则将提升计算效率。本次计算中开启对称性分析，设置 "1"，关于对称性分析的测试还在进一步完善，如果计算结果奇怪，建议设置成 "0"之后再进行计算，比较结果是否一致。
 
 - <strong>pseudo_dir</strong>：计算中需要使用赝势来近似离子和电子相互作用势能，为计算提供赝势文件。<strong>pseudo_dir</strong>指定 `STRU` 文件中赝势文件所在的目录。本次计算将赝势和轨道文件都与 `INPUT`、`STRU`、`KPT` 文件放在一起，因此填入 "."，表示处在当前文件夹中。
-  > ABACUS 支持的赝势文件——Si_ONCV_PBE-1.0.upf
+  > ABACUS 支持的赝势文件——`Si_ONCV_PBE-1.0.upf`，对应的文件可以前往[quantum-simulation.org](http://www.quantum-simulation.org/potentials/sg15_oncv/upf/Si_ONCV_PBE-1.0.upf)进行下载。
 
   > "ONCV"代表模守恒赝势的种类，"PBE"是采用的交换关联泛函。
 
@@ -156,7 +163,7 @@ scf_thr                 1e-8
 
 ## 3. 求解 Kohn-Sham 方程
 
-- <strong>nbands</strong>：计算的 Kohn-Sham 轨道数目，在本次计算中无磁性，参数 `nspin` 取 1（默认值），程序目前采取 `0.5*`<em>max(1.2*occupied_bands, occupied_bands + 10) </em>计算 nbands。 对于 Si，价电子数为 4，每个能级填充可以填充自旋向上和向下 2 个电子，金刚石结构中共有 8 个原子，则$\text{nbands}=\max{(1.2*8*2，8*2+10)}=26$。
+- <strong>nbands</strong>：计算的 Kohn-Sham 轨道数目，在本次计算中无磁性，参数 `nspin` 取 1（默认值），程序目前采取$$0.5 * \max{(1.2 * \text{occupied_bands}, \text{occupied_bands} + 10)}$$计算 nbands。 对于 Si，价电子数为 4，每个能级填充可以填充自旋向上和向下 2 个电子，金刚石结构中共有 8 个原子，则$$\text{nbands}=\max{(1.2 * 8 * 2, 8 * 2 + 10)}=26$$。
 - <strong>ks_solver</strong>：在不同基组中展开哈密顿矩阵的对角化方法，对于 pw，可以选择 `cg`(Conjugate Gradient，默认方法)，`bpcg`(还不是太稳定、测试中)，`dav`(Davidson 算法)；对于 LCAO，可以选择 `genelpa`(默认值)，`scalapack_gvx`(Scalable Linear Algebra PACKage)。如果选用 LCAO 基组，`ks_solver` 可设置为"genelpa"。
 
 ```bash
@@ -192,6 +199,8 @@ mixing_gg0              0
 到此，我们完成了对主要计算参数的设置，此时集成了以上主要参数的 `INPUT` 文件如下：
 
 ```bash
+INPUT_PARAMETERS
+
 #Parameters (1.General)
 suffix                  Si
 calculation             scf
