@@ -156,7 +156,7 @@ scf_thr                 1e-8
 
 ## 3. 求解 Kohn-Sham 方程
 
-- <strong>nbands</strong>：计算的 Kohn-Sham 轨道数目，在本次计算中无磁性，参数 `nspin` 取 1（默认值），程序目前采取 `0.5*`<em>max(1.2*occupied_bands, occupied_bands + 10) </em>计算 nbands。 对于 Si，价电子数为 4，每个能级填充可以填充自旋向上和向下 2 个电子，金刚石结构中共有 8 个原子，则<em>nbands=max(1.2*8*2，8*2+10)=26</em>。
+- <strong>nbands</strong>：计算的 Kohn-Sham 轨道数目，在本次计算中无磁性，参数 `nspin` 取 1（默认值），程序目前采取 `0.5*`<em>max(1.2*occupied_bands, occupied_bands + 10) </em>计算 nbands。 对于 Si，价电子数为 4，每个能级填充可以填充自旋向上和向下 2 个电子，金刚石结构中共有 8 个原子，则$\text{nbands}=\max{(1.2*8*2，8*2+10)}=26$。
 - <strong>ks_solver</strong>：在不同基组中展开哈密顿矩阵的对角化方法，对于 pw，可以选择 `cg`(Conjugate Gradient，默认方法)，`bpcg`(还不是太稳定、测试中)，`dav`(Davidson 算法)；对于 LCAO，可以选择 `genelpa`(默认值)，`scalapack_gvx`(Scalable Linear Algebra PACKage)。如果选用 LCAO 基组，`ks_solver` 可设置为"genelpa"。
 
 ```bash
